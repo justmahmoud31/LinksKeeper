@@ -1,15 +1,12 @@
-// Routes/OAuthRoutes.js
 const express = require('express');
-const router = express.Router();
 const passport = require('passport');
-const oAuthController = require('../Controllers/oAuthController.js');
+const router = express.Router();
 
-// Include the scope parameter here
-router.get('/google', passport.authenticate('google', { scope: ['email', 'profile'] }));
 
-router.get('/google/callback', passport.authenticate('google', {
-    successRedirect: '/protected',
-    failureRedirect: '/auth/failure'
+router.get('/discord', passport.authenticate('discord'));
+router.get('/discord/redirect', passport.authenticate('discord', {
+    failureRedirect: '/login',
+    successRedirect: '/'
 }));
 
 module.exports = router;

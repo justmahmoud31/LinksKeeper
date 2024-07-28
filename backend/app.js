@@ -1,20 +1,38 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const session = require('express-session');
 const passport = require('passport');
-require('./Auth/Oauth.js');  
+const dotenv = require('dotenv');
+const sequelize = require('./Config/db.js');
 
-const linksRouter = require('./Routes/LinksRoutes');
-const oAuthRouter = require('./Routes/OAuthRoutes');
+// Load environment variables
+dotenv.config();
+
+// Ensure the Discord strategy file is required and executed before using the routes
+require('./Auth/Oauth.js'); // Make sure the path to your strategy file is correct
+
+const authRoutes = require('./Routes/OAuthRoutes.js');
 
 const app = express();
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(session({ secret: process.env.GOOGLE_CLIENT_SECRET, resave: false, saveUninitialized: false }));
+
+// Initialize Sequelize
+sequelize.authenticate()
+  .then(() => console.log('Database connected...'))
+  .catch(err => console.log('Error: ' + err));
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(session({
+  secret: process.env.DISCORDCLIENTSECRET,
+  resave: false,
+  saveUninitialized: true
+}));
 app.use(passport.initialize());
 app.use(passport.session());
-app.use('/', linksRouter);
-app.use('/auth', oAuthRouter);
-app.listen(process.env.PORT, () => {
-  console.log(`Server is running on port ${process.env.PORT}`);
-});
+
+// Routes
+app.use('/api', authRoutes);
+
+// Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
