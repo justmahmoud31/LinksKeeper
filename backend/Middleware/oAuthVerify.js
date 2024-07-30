@@ -1,4 +1,8 @@
 const isLoggedin = async (req, res, next) => {
-    req.user ? next() : res.sendStatus(401);
+    if (req.user) {
+        next();
+    } else {
+        res.sendStatus(401);
+    }
 };
 module.exports = isLoggedin;

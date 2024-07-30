@@ -2,6 +2,7 @@ const passport = require('passport');
 const DiscordStrategy = require('passport-discord').Strategy;
 const dotenv = require('dotenv');
 const User = require('../Models/users.js');
+const { generateToken } = require('../utils/jwt'); 
 dotenv.config();
 
 var scopes = ['identify', 'email', 'guilds', 'guilds.join'];
@@ -22,6 +23,8 @@ async function(accessToken, refreshToken, profile, cb) {
                 email: profile.email
             });
         }
+        const token = generateToken(user);
+        user.token = token;
         return cb(null, user);
     } catch (err) {
         console.error('Error in strategy:', err);
@@ -30,7 +33,7 @@ async function(accessToken, refreshToken, profile, cb) {
 }));
 
 passport.serializeUser((user, done) => {
-    done(null, user.userid);
+    done(null, user.userid); 
 });
 
 passport.deserializeUser(async (id, done) => {
